@@ -1,6 +1,6 @@
 {
   "name": "@lubo3395/mcp-sqlite-server",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "MCP 服务器 — SQLite 数据库操作（查询、表管理、数据导入导出）",
   "type": "module",
   "main": "dist/index.js",
