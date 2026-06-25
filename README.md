@@ -39,7 +39,7 @@ SQLite 数据库 MCP 服务器 — 让 AI 助手（Claude、Cursor、VS Code Cop
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db"]
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db", "--max-rows", "200"]
     }
   }
 }
@@ -49,7 +49,7 @@ SQLite 数据库 MCP 服务器 — 让 AI 助手（Claude、Cursor、VS Code Cop
 
 ```bash
 npm install -g @lubo3395/mcp-sqlite-server
-mcp-sqlite-server --db ./data.db
+mcp-sqlite-server --db ./data.db --max-rows 200
 ```
 
 ## 配置
@@ -63,7 +63,7 @@ mcp-sqlite-server --db ./data.db
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "D:/path/to/data.db"],
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "D:/path/to/data.db", "--max-rows", "200"],
       "env": {}
     }
   }
@@ -77,7 +77,7 @@ mcp-sqlite-server --db ./data.db
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "D:/path/to/data.db", "--readonly"]
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "D:/path/to/data.db", "--readonly", "--max-rows", "200"]
     }
   }
 }
@@ -90,7 +90,7 @@ mcp-sqlite-server --db ./data.db
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./main.db", "--db", "./reference.db"]
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./main.db", "--db", "./reference.db", "--max-rows", "200"]
     }
   }
 }
@@ -105,7 +105,7 @@ mcp-sqlite-server --db ./data.db
   "servers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db"]
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db", "--max-rows", "200"]
     }
   }
 }
@@ -120,7 +120,7 @@ mcp-sqlite-server --db ./data.db
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db"]
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db", "--max-rows", "200"]
     }
   }
 }
@@ -135,7 +135,7 @@ mcp-sqlite-server --db ./data.db
   "mcpServers": {
     "sqlite": {
       "command": "npx",
-      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db"]
+      "args": ["-y", "@lubo3395/mcp-sqlite-server", "--db", "./data.db", "--max-rows", "200"]
     }
   }
 }
