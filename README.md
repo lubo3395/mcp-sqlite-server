@@ -145,19 +145,24 @@ mcp-sqlite-server --db ./data.db
 
 ### sqlite_query
 
-执行 SQL 语句，支持参数化查询防止注入。
+执行 SQL 语句，支持参数化查询防止注入。查询结果自动截断（默认最多 200 行），避免浪费 token。
 
 | 参数 | 类型 | 必填 | 说明 |
 |------|------|------|------|
 | `sql` | string | 是 | SQL 语句 |
 | `params` | array | 否 | 参数化查询参数（`?` 占位符） |
+| `limit` | number | 否 | 返回行数上限（默认 200，受 `--max-rows` 限制） |
+| `offset` | number | 否 | 跳过的行数，配合 limit 分页 |
 | `db_alias` | string | 否 | 数据库别名 |
 
 示例：
 ```
 查询: SELECT * FROM users WHERE age > ?
 参数: [25]
+分页: limit=50, offset=100
 ```
+
+返回值包含 `total_count`（总行数）和 `has_more`（是否还有更多），AI 可据此决定是否继续分页。
 
 ### sqlite_list_tables
 
@@ -227,11 +232,12 @@ mcp-sqlite-server --db ./data.db
 ## 命令行参数
 
 ```
-mcp-sqlite-server --db <path> [--db <path>...] [--readonly]
+mcp-sqlite-server --db <path> [选项...]
 
---db <path>      SQLite 数据库文件路径（必填，可指定多个）
---readonly       只读模式（禁止写操作）
---help, -h       显示帮助
+--db <path>        SQLite 数据库文件路径（必填，可指定多个）
+--readonly         只读模式（禁止写操作）
+--max-rows <n>     查询返回的最大行数上限（默认 200，设为 0 不限制）
+--help, -h         显示帮助
 ```
 
 ## 本地开发

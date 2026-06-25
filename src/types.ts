@@ -5,6 +5,7 @@ export interface DbState {
   dbPaths: string[];
   readonly: boolean;
   attachAliases: string[];
+  maxRows: number;
 }
 
 export interface ColumnInfo {
@@ -39,6 +40,8 @@ export interface QueryResult {
   columns: string[];
   rows: unknown[][];
   row_count: number;
+  total_count: number;
+  has_more: boolean;
 }
 
 export interface CreateTableResult {

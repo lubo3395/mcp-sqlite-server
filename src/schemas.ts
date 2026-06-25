@@ -3,6 +3,8 @@ import { z } from "zod";
 export const QuerySchema = z.object({
   sql: z.string().min(1, "SQL 语句不能为空").describe("要执行的 SQL 语句"),
   params: z.array(z.unknown()).optional().describe("参数化查询参数（可选），用于防止 SQL 注入"),
+  limit: z.number().int().min(1).max(10000).optional().describe("返回行数上限（可选），超过此值的结果会被截断"),
+  offset: z.number().int().min(0).optional().describe("跳过的行数（可选），用于分页"),
   db_alias: z.string().optional().describe("数据库别名（可选），默认为主数据库"),
 }).strict();
 

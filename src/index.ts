@@ -16,38 +16,43 @@ if (Number(process.versions.node.split(".")[0]) < MIN_NODE_MAJOR) {
   process.exit(1);
 }
 
-function parseArgs(): { dbPaths: string[]; readonly: boolean } {
+function parseArgs(): { dbPaths: string[]; readonly: boolean; maxRows: number } {
   const args = process.argv.slice(2);
   const dbPaths: string[] = [];
   let readonly = false;
+  let maxRows = 200;
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--db" && i + 1 < args.length) {
       dbPaths.push(args[++i]);
     } else if (args[i] === "--readonly") {
       readonly = true;
+    } else if (args[i] === "--max-rows" && i + 1 < args.length) {
+      const val = parseInt(args[++i], 10);
+      if (!isNaN(val) && val > 0) maxRows = val;
     } else if (args[i] === "--help" || args[i] === "-h") {
       console.log(`
 @lubo3395/mcp-sqlite-server — SQLite 数据库 MCP 服务器
 
 用法:
-  mcp-sqlite-server --db <path> [--db <path>...] [--readonly]
+  mcp-sqlite-server --db <path> [选项...]
 
 参数:
   --db <path>      SQLite 数据库文件路径（必填，可指定多个支持多库）
   --readonly       以只读模式启动（禁止任何写操作）
+  --max-rows <n>   查询返回的最大行数上限（默认 200，设为 0 不限制）
   --help, -h       显示此帮助信息
 
 示例:
   mcp-sqlite-server --db ./data.db
   mcp-sqlite-server --db ./data.db --readonly
-  mcp-sqlite-server --db ./main.db --db ./ref.db
+  mcp-sqlite-server --db ./main.db --db ./ref.db --max-rows 500
 `);
       process.exit(0);
     }
   }
 
-  return { dbPaths, readonly };
+  return { dbPaths, readonly, maxRows };
 }
 
 async function main(): Promise<void> {
@@ -55,7 +60,7 @@ async function main(): Promise<void> {
   let dbState: DbState | null = null;
 
   try {
-    dbState = createDbState(args);
+    dbState = createDbState({ ...args, maxRows: args.maxRows });
 
     const server = new McpServer({
       name: "@lubo3395/mcp-sqlite-server",

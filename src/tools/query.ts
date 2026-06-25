@@ -3,13 +3,40 @@ import type { DbState, QueryResult, TableInfo, SchemaResult, ColumnInfo, IndexIn
 import { QuerySchema, ListTablesSchema, GetSchemaSchema } from "../schemas.js";
 import { isReadOnlyStatement, formatResultsAsTable, handleError, quoteIdentifier } from "../utils.js";
 
-function handleQuery(dbState: DbState, sql: string, params?: unknown[]): QueryResult {
+function handleQuery(
+  dbState: DbState,
+  sql: string,
+  params?: unknown[],
+  limit?: number,
+  offset?: number,
+): QueryResult {
   if (dbState.readonly && !isReadOnlyStatement(sql)) {
     throw new Error("当前为只读模式，不允许执行写操作");
   }
 
-  const stmt = dbState.mainDb.prepare(sql);
+  const effectiveLimit = limit ?? dbState.maxRows;
 
+  // Wrap with LIMIT/OFFSET for SELECT-like statements
+  const trimmed = sql.trim().toUpperCase();
+  const isSelect = trimmed.startsWith("SELECT") || trimmed.startsWith("WITH") || trimmed.startsWith("PRAGMA");
+  const limitedSql = isSelect && effectiveLimit > 0
+    ? `SELECT * FROM (${sql}) AS _mcp_limit LIMIT ${effectiveLimit}${offset ? ` OFFSET ${offset}` : ""}`
+    : sql;
+
+  // Count total rows for SELECT-like queries
+  let totalCount = -1;
+  if (isSelect) {
+    try {
+      const countRow = dbState.mainDb.prepare(
+        `SELECT COUNT(*) as cnt FROM (${sql}) AS _mcp_count`
+      ).get() as unknown as { cnt: number };
+      totalCount = countRow.cnt;
+    } catch {
+      totalCount = -1;
+    }
+  }
+
+  const stmt = dbState.mainDb.prepare(limitedSql);
   const rawRows = params && params.length > 0
     ? stmt.all(...(params as []))
     : stmt.all();
@@ -19,11 +46,16 @@ function handleQuery(dbState: DbState, sql: string, params?: unknown[]): QueryRe
     columns.map((col) => row[col] ?? null)
   );
 
+  const rowCount = rows.length;
+  const hasMore = totalCount > 0 && (offset ?? 0) + rowCount < totalCount;
+
   return {
     sql,
     columns,
     rows,
-    row_count: rows.length,
+    row_count: rowCount,
+    total_count: totalCount > 0 ? totalCount : rowCount,
+    has_more: hasMore,
   };
 }
 
@@ -81,7 +113,13 @@ function handleGetSchema(dbState: DbState, table: string, dbAlias?: string): Sch
 
 function formatQueryResult(result: QueryResult): string {
   let text = `> SQL: \`${result.sql}\`\n\n`;
-  text += `**影响行数**: ${result.row_count}\n\n`;
+  text += `**总行数**: ${result.total_count}`;
+  if (result.has_more) {
+    text += `，**返回**: ${result.row_count} 行（已截断，使用 limit/offset 分页查看剩余）`;
+  } else {
+    text += `，**影响行数**: ${result.row_count}`;
+  }
+  text += "\n\n";
   if (result.columns.length > 0) {
     text += formatResultsAsTable(result.columns, result.rows);
   }
@@ -150,7 +188,7 @@ export function registerQueryTools(server: McpServer, dbState: DbState): void {
     },
     async (params) => {
       try {
-        const result = handleQuery(dbState, params.sql, params.params);
+        const result = handleQuery(dbState, params.sql, params.params, params.limit, params.offset);
         return {
           content: [{ type: "text", text: formatQueryResult(result) }],
           structuredContent: result as unknown as Record<string, unknown>,

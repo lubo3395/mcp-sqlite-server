@@ -23,16 +23,11 @@ export function formatResultsAsTable(columns: string[], rows: unknown[][]): stri
   lines.push("| " + columns.map((h, i) => h.padEnd(colWidths[i])).join(" | ") + " |");
   lines.push("| " + colWidths.map((w) => "-".repeat(w)).join(" | ") + " |");
 
-  const displayRows = rows.slice(0, 200);
-  for (const row of displayRows) {
+  for (const row of rows) {
     lines.push("| " + colWidths.map((w, i) => {
       const val = i < row.length ? String(row[i] ?? "NULL") : "";
       return val.padEnd(w);
     }).join(" | ") + " |");
-  }
-  if (rows.length > 200) {
-    lines.push("");
-    lines.push(`*仅显示前 200 行，共 ${rows.length} 行*`);
   }
   return lines.join("\n");
 }

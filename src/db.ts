@@ -5,6 +5,7 @@ import type { DbState } from "./types.js";
 export interface ConnectionArgs {
   dbPaths: string[];
   readonly: boolean;
+  maxRows: number;
 }
 
 export function createDbState(args: ConnectionArgs): DbState {
@@ -37,6 +38,7 @@ export function createDbState(args: ConnectionArgs): DbState {
     dbPaths: args.dbPaths.map((p) => resolve(p)),
     readonly: args.readonly,
     attachAliases,
+    maxRows: args.maxRows,
   };
 }
 
